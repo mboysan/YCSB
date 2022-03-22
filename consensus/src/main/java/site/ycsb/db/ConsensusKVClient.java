@@ -1,5 +1,6 @@
 package site.ycsb.db;
 
+import com.mboysan.consensus.KVOperationException;
 import com.mboysan.consensus.KVStoreClient;
 import com.mboysan.consensus.configuration.Configuration;
 import com.mboysan.consensus.configuration.TcpTransportConfig;
@@ -10,6 +11,7 @@ import site.ycsb.ByteIterator;
 import site.ycsb.DB;
 import site.ycsb.DBException;
 import site.ycsb.Status;
+import site.ycsb.StringByteIterator;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,27 +43,80 @@ public class ConsensusKVClient extends DB {
 
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
-    return Status.OK;
+    try {
+      if (fields == null) {
+        String value = kvStoreClient.get(key);
+        result.put(key, new StringByteIterator(value));
+      } else {
+        for (String field : fields) {
+          String value = kvStoreClient.get(field);
+          result.put(field, new StringByteIterator(value));
+        }
+      }
+      return Status.OK;
+    } catch (KVOperationException e) {
+      LOGGER.error("[read] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
+      return Status.ERROR;
+    }
   }
 
   @Override
   public Status scan(String table, String startkey, int recordcount, Set<String> fields,
                      Vector<HashMap<String, ByteIterator>> result) {
-    return Status.OK;
+    try {
+      if (fields == null || fields.isEmpty()) {
+        Set<String> keys = kvStoreClient.iterateKeys();
+        HashMap<String, ByteIterator> cur = new HashMap<>();
+        for (String key : keys) {
+          String value = kvStoreClient.get(key);
+          cur.put(key, new StringByteIterator(value));
+        }
+        result.add(cur);
+        return Status.OK;
+      } else {
+        return Status.NOT_IMPLEMENTED;
+      }
+    } catch (KVOperationException e) {
+      LOGGER.error("[scan] error at table={}, startkey={}, recordcount={}, err={}",
+          table, startkey, recordcount, e.getMessage(), e);
+      return Status.ERROR;
+    }
   }
 
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
-    return Status.OK;
+    try {
+      for (String keyToUpdate : values.keySet()) {
+        kvStoreClient.set(keyToUpdate, values.get(keyToUpdate).toString());
+      }
+      return Status.OK;
+    } catch (KVOperationException e) {
+      LOGGER.error("[update] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
+      return Status.ERROR;
+    }
   }
 
   @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
-    return Status.OK;
+    try {
+      for (String keyToUpdate : values.keySet()) {
+        kvStoreClient.set(keyToUpdate, values.get(keyToUpdate).toString());
+      }
+      return Status.OK;
+    } catch (KVOperationException e) {
+      LOGGER.error("[insert] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
+      return Status.ERROR;
+    }
   }
 
   @Override
   public Status delete(String table, String key) {
-    return Status.OK;
+    try {
+      kvStoreClient.delete(key);
+      return Status.OK;
+    } catch (KVOperationException e) {
+      LOGGER.error("[delete] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
+      return Status.ERROR;
+    }
   }
 }
