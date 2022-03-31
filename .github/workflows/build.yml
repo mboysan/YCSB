@@ -55,4 +55,4 @@ jobs:
           git commit --message "build ycsb v${PROJ_VERSION}_${BUILD_NUMBER}"
           git remote rm origin
           git remote add origin https://${MVN_REPO_KEY}@github.com/mboysan/mvn-repo.git
-          git push --quiet origin release
+          git push --quiet origin releases
