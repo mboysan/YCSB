@@ -45,8 +45,10 @@ jobs:
           cd $HOME
           git clone --depth=1 https://github.com/mboysan/mvn-repo.git --branch releases
           
-          mkdir -p ./mvn-repo/ycsb
-          cp -avr $REPO_DIR/distribution/target/*.tar.gz $HOME/mvn-repo/ycsb/
+          # copy the binaries to git directory
+          cd mvn-repo
+          mkdir -p ycsb
+          cp -avr $REPO_DIR/distribution/target/*.tar.gz ycsb/
           
           # commit & push files
           git add --all
