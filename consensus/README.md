@@ -12,7 +12,7 @@ mvn -pl site.ycsb:consensus-binding -am clean package -DskipTests
 
 ---
 
-## Releasing
+## Release and execute
 
 - Run mvn with release profile:
 ```
@@ -42,5 +42,6 @@ chmod +x bin/ycsb.sh
 ```
 - Finally, run the script:
 ```
+export JAVA_OPTS=-Dlog4j.configuration=file:<path-to-log4j-configuration>
 ./bin/ycsb.sh run consensus -s -P conf/application.properties -P workloads/workloada
 ```
