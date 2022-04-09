@@ -1,0 +1,58 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and release
+        env:
+          MVN_REPO_KEY: ${{ secrets.MVN_REPO_KEY }}
+          BUILD_NUMBER: ${{github.run_number}}
+        run: |
+          REPO_DIR=$(pwd)
+          
+          # compile
+          mvn -pl site.ycsb:ycsb -am clean package -DskipTests -P ycsb-release
+          
+          PROJ_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+          
+          # configure git
+          git config --global user.email "dev@mboysan.com"
+          git config --global user.name "mboysan"
+          
+          # get repo branch
+          cd $HOME
+          git clone --depth=1 https://github.com/mboysan/mvn-repo.git --branch releases
+          
+          # copy the binaries to git directory
+          cd mvn-repo
+          mkdir -p ycsb
+          cp -avr $REPO_DIR/distribution/target/*.tar.gz ycsb/
+          
+          # commit & push files
+          git add --all
+          git commit --message "build ycsb v${PROJ_VERSION}_${BUILD_NUMBER}"
+          git remote rm origin
+          git remote add origin https://${MVN_REPO_KEY}@github.com/mboysan/mvn-repo.git
+          git push --quiet origin releases
