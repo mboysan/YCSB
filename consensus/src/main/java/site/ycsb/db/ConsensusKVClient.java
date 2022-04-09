@@ -2,7 +2,7 @@ package site.ycsb.db;
 
 import com.mboysan.consensus.KVOperationException;
 import com.mboysan.consensus.KVStoreClient;
-import com.mboysan.consensus.configuration.Configuration;
+import com.mboysan.consensus.configuration.CoreConfig;
 import com.mboysan.consensus.configuration.TcpTransportConfig;
 import com.mboysan.consensus.vanilla.VanillaTcpClientTransport;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class ConsensusKVClient extends DB {
 
   @Override
   public void init() throws DBException {
-    TcpTransportConfig transportConfig = Configuration.newInstance(TcpTransportConfig.class, getProperties());
+    TcpTransportConfig transportConfig = CoreConfig.newInstance(TcpTransportConfig.class, getProperties());
     LOGGER.info("loaded conf={}", transportConfig);
     VanillaTcpClientTransport transport = new VanillaTcpClientTransport(transportConfig);
     kvStoreClient = new KVStoreClient(transport);
