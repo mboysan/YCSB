@@ -45,3 +45,8 @@ chmod +x bin/ycsb.sh
 export JAVA_OPTS=-Dlog4j.configuration=file:<path-to-log4j-configuration>
 ./bin/ycsb.sh run consensus -s -P conf/application.properties -P workloads/workloada
 ```
+
+- Alternatively, to specify the graphite measurements exporter use:
+```
+./bin/ycsb.sh run consensus -s -p measurementtype=timeseries -p exportfile=graphite.txt -p exporter=site.ycsb.measurements.exporter.GraphiteMeasurementsExporter -P consensus/conf/application.properties -P workloads/workloada
+```
