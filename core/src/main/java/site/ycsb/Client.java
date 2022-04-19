@@ -228,8 +228,7 @@ public final class Client {
       String exporterStr = props.getProperty(EXPORTER_PROPERTY,
           "site.ycsb.measurements.exporter.TextMeasurementsExporter");
       try {
-        exporter = (MeasurementsExporter) Class.forName(exporterStr).getConstructor(OutputStream.class)
-            .newInstance(out);
+        exporter = createMeasurementsExporter(exporterStr, out, props);
       } catch (Exception e) {
         System.err.println("Could not find exporter " + exporterStr
             + ", will use default text reporter.");
@@ -270,6 +269,17 @@ public final class Client {
       if (exporter != null) {
         exporter.close();
       }
+    }
+  }
+
+  private static MeasurementsExporter createMeasurementsExporter(
+      String exporterStr, OutputStream out, Properties props) throws Exception {
+    try {
+      return (MeasurementsExporter) Class.forName(exporterStr).getConstructor(OutputStream.class, Properties.class)
+          .newInstance(out, props);
+    } catch (NoSuchMethodException retry) {
+      return (MeasurementsExporter) Class.forName(exporterStr).getConstructor(OutputStream.class)
+          .newInstance(out);
     }
   }
 

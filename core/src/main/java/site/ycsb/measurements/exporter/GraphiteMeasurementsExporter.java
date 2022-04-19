@@ -3,6 +3,7 @@ package site.ycsb.measurements.exporter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
@@ -10,12 +11,15 @@ import java.util.regex.Pattern;
  */
 public class GraphiteMeasurementsExporter implements MeasurementsExporter {
 
+  private static final String METRICS_PREFIX_PROPERTY = "metricsprefix";
   private static final Pattern WHITESPACE = Pattern.compile("[\\s]+");
   private static final String DASH = "-";
 
+  private final String metricsPrefix;
   private final PrintWriter writer;
 
-  public GraphiteMeasurementsExporter(OutputStream out) {
+  public GraphiteMeasurementsExporter(OutputStream out, Properties props) {
+    this.metricsPrefix = props.getProperty(METRICS_PREFIX_PROPERTY);
     this.writer = new PrintWriter(out);
   }
 
@@ -37,9 +41,10 @@ public class GraphiteMeasurementsExporter implements MeasurementsExporter {
   private void write(String metric, String measurement, String value) {
     if (isTimeSeriesMeasurement(measurement)) {
       // measurement is time
-      writer.println(sanitize(metric) + " " + sanitize(value) + " " + measurement);
+      writer.println(prefix(metricsPrefix, sanitize(metric)) + " " + sanitize(value) + " " + measurement);
     } else {
-      writer.println(sanitize(metric + " " + measurement) + " " + value + " " + System.currentTimeMillis());
+      writer.println(prefix(metricsPrefix, sanitize(metric + " " + measurement)) + " " + value + " "
+          + System.currentTimeMillis());
     }
   }
 
@@ -63,5 +68,12 @@ public class GraphiteMeasurementsExporter implements MeasurementsExporter {
    */
   private static String sanitize(String string) {
     return WHITESPACE.matcher(string.trim()).replaceAll(DASH).toLowerCase();
+  }
+
+  private static String prefix(String prefix, String string) {
+    if (prefix == null || prefix.trim().length() == 0) {
+      return string;
+    }
+    return prefix + "." + string;
   }
 }
