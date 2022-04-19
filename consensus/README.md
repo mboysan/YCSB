@@ -48,5 +48,7 @@ export JAVA_OPTS=-Dlog4j.configuration=file:<path-to-log4j-configuration>
 
 - Alternatively, to specify the graphite measurements exporter use:
 ```
-./bin/ycsb.sh run consensus -s -p measurementtype=timeseries -p exportfile=graphite.txt -p exporter=site.ycsb.measurements.exporter.GraphiteMeasurementsExporter -P consensus/conf/application.properties -P workloads/workloada
+./bin/ycsb.sh run consensus -s -p measurementtype=timeseries -p exportfile=graphite.txt -p exporter=site.ycsb.measurements.exporter.GraphiteMeasurementsExporter -p metricsprefix=p1.p2 -P consensus/conf/application.properties -P workloads/workloada
 ```
+In the above command, `metricsprefix` property can be omitted in order not to prefix custom strings for each 
+measurement. Also to print the results to std out, remove the `exportfile` property.
