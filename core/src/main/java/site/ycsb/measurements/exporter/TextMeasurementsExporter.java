@@ -25,9 +25,11 @@ import java.io.OutputStreamWriter;
  * Write human readable text. Tries to emulate the previous print report method.
  */
 public class TextMeasurementsExporter implements MeasurementsExporter {
+  private final OutputStream os;
   private final BufferedWriter bw;
 
   public TextMeasurementsExporter(OutputStream os) {
+    this.os = os;
     this.bw = new BufferedWriter(new OutputStreamWriter(os));
   }
 
@@ -47,6 +49,7 @@ public class TextMeasurementsExporter implements MeasurementsExporter {
   }
 
   public void close() throws IOException {
+    this.os.flush();
     this.bw.close();
   }
 }

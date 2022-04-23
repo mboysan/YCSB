@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * Record a series of measurements as raw data points without down sampling,
@@ -34,6 +35,10 @@ import java.util.Properties;
  *
  */
 public class OneMeasurementRaw extends OneMeasurement {
+
+  private static final Pattern WHITESPACE = Pattern.compile("[\\s]+");
+  private static final String DASH = "-";
+
   /**
    * One raw data point, two fields: timestamp (ms) when the datapoint is
    * inserted, and the value.
@@ -88,9 +93,21 @@ public class OneMeasurementRaw extends OneMeasurement {
   public static final String NO_SUMMARY_STATS = "measurement.raw.no_summary";
   public static final String NO_SUMMARY_STATS_DEFAULT = "false";
 
+  /**
+   * Optionally, prefix to be added to the measurement.
+   */
+  public static final String MEASUREMENT_PREFIX_PROP = "measurement.raw.prefix";
+  /**
+   * Optionally, if set to true, export the metric as graphite supported format.
+   * [name] [value] [timestamp]
+   */
+  public static final String MEASUREMENT_EXPORT_GRAPHITE_PROP = "measurement.raw.graphite";
+
   private final PrintStream outputStream;
 
   private boolean noSummaryStats = false;
+  private final String prefix;
+  private final boolean exportToGraphite;
 
   private LinkedList<RawDataPoint> measurements;
   private long totalLatency = 0;
@@ -125,6 +142,8 @@ public class OneMeasurementRaw extends OneMeasurement {
 
     noSummaryStats = Boolean.parseBoolean(props.getProperty(NO_SUMMARY_STATS,
         NO_SUMMARY_STATS_DEFAULT));
+    prefix = props.getProperty(MEASUREMENT_PREFIX_PROP, "");
+    exportToGraphite = Boolean.parseBoolean(props.getProperty(MEASUREMENT_EXPORT_GRAPHITE_PROP, "false"));
 
     measurements = new LinkedList<>();
   }
@@ -147,9 +166,12 @@ public class OneMeasurementRaw extends OneMeasurement {
     outputStream.println(getName() +
         " latency raw data: op, timestamp(ms), latency(us)");
     for (RawDataPoint point : measurements) {
-      outputStream.println(
-          String.format("%s,%d,%d", getName(), point.timeStamp(),
-              point.value()));
+      String name = prefix + getName();
+      if (exportToGraphite) {
+        outputStream.printf("%s %d %d%n", sanitize(name), point.value(), point.timeStamp());
+      } else {
+        outputStream.printf("%s,%d,%d%n", sanitize(name), point.timeStamp(), point.value());
+      }
     }
     if (outputStream != System.out) {
       outputStream.close();
@@ -203,5 +225,13 @@ public class OneMeasurementRaw extends OneMeasurement {
     windowOperations = 0;
 
     return toReturn;
+  }
+
+  /**
+   * Trims the string and replaces all whitespace characters with the provided symbol.
+   * Taken from com.codahale.metrics.graphite
+   */
+  private static String sanitize(String string) {
+    return WHITESPACE.matcher(string.trim()).replaceAll(DASH).toLowerCase();
   }
 }
