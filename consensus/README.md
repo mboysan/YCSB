@@ -61,8 +61,10 @@ Following are all the additional optional properties to include if `measurementt
 (can be same or different than the `exportfile` property).
 - `measurement.raw.prefix`: prefix to be added to the measurement.
 - `measurement.raw.graphite`: (true\false), if set to true, export the metric as graphite supported format.
+- `measurement.raw.separator`: set a separator for measurements. If `measurement.raw.graphite` set to true blank space
+is used by default, otherwise, the default value is comma to support csv output.
 
 **Note:** [consensus-infra](https://github.com/mboysan/consensus-infra) uses the following execution format:
 ```
-./bin/ycsb.sh run consensus -s -p measurementtype=raw -p measurement.raw.output_file=metrics.txt -p exportfile=metrics.txt -P consensus/conf/application.properties -P workloads/workloada
+./bin/ycsb.sh run consensus -s -p measurementtype=raw -p measurement.raw.output_file=metrics.txt -p measurement.raw.separator=, -p exportfile=metrics.txt -P consensus/conf/application.properties -P workloads/workloada
 ```
