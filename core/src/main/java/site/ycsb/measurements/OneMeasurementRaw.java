@@ -102,12 +102,17 @@ public class OneMeasurementRaw extends OneMeasurement {
    * [name] [value] [timestamp]
    */
   public static final String MEASUREMENT_EXPORT_GRAPHITE_PROP = "measurement.raw.graphite";
+  /**
+   * Optionally, set a separator per each measurement.
+   */
+  public static final String MEASUREMENT_SEPARATOR_PROP = "measurement.raw.separator";
 
   private final PrintStream outputStream;
 
   private boolean noSummaryStats = false;
   private final String prefix;
   private final boolean exportToGraphite;
+  private final String separator;
 
   private LinkedList<RawDataPoint> measurements;
   private long totalLatency = 0;
@@ -144,6 +149,7 @@ public class OneMeasurementRaw extends OneMeasurement {
         NO_SUMMARY_STATS_DEFAULT));
     prefix = props.getProperty(MEASUREMENT_PREFIX_PROP, "");
     exportToGraphite = Boolean.parseBoolean(props.getProperty(MEASUREMENT_EXPORT_GRAPHITE_PROP, "false"));
+    separator = props.getProperty(MEASUREMENT_SEPARATOR_PROP, exportToGraphite ? " " : ",");
 
     measurements = new LinkedList<>();
   }
@@ -168,9 +174,9 @@ public class OneMeasurementRaw extends OneMeasurement {
     for (RawDataPoint point : measurements) {
       String name = prefix + getName();
       if (exportToGraphite) {
-        outputStream.printf("%s %d %d%n", sanitize(name), point.value(), point.timeStamp());
+        outputStream.printf("%s%s%d%s%d%n", sanitize(name), separator, point.value(), separator, point.timeStamp());
       } else {
-        outputStream.printf("%s,%d,%d%n", sanitize(name), point.timeStamp(), point.value());
+        outputStream.printf("%s%s%d%s%d%n", sanitize(name), separator, point.timeStamp(), separator, point.value());
       }
     }
     if (outputStream != System.out) {
