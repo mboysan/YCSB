@@ -222,9 +222,7 @@ public final class Client {
       if (exportFile == null) {
         out = System.out;
       } else {
-        out = new PrintStream(
-            new FileOutputStream(exportFile, true),
-            true);
+        out = new PrintStream(new FileOutputStream(exportFile, true), true);
       }
 
       // if no exporter is provided the default text one will be used
