@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
@@ -221,7 +222,7 @@ public final class Client {
       if (exportFile == null) {
         out = System.out;
       } else {
-        out = new FileOutputStream(exportFile);
+        out = new PrintStream(new FileOutputStream(exportFile, true), true);
       }
 
       // if no exporter is provided the default text one will be used
