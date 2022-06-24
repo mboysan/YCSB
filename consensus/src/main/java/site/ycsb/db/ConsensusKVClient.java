@@ -44,15 +44,8 @@ public class ConsensusKVClient extends DB {
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
-      if (fields == null) {
-        String value = kvStoreClient.get(key);
-        result.put(key, new StringByteIterator(value));
-      } else {
-        for (String field : fields) {
-          String value = kvStoreClient.get(field);
-          result.put(field, new StringByteIterator(value));
-        }
-      }
+      String value = kvStoreClient.get(key);
+      result.put(key, new StringByteIterator(value));
       return Status.OK;
     } catch (KVOperationException e) {
       LOGGER.error("[read] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -63,32 +56,13 @@ public class ConsensusKVClient extends DB {
   @Override
   public Status scan(String table, String startkey, int recordcount, Set<String> fields,
                      Vector<HashMap<String, ByteIterator>> result) {
-    try {
-      if (fields == null || fields.isEmpty()) {
-        Set<String> keys = kvStoreClient.iterateKeys();
-        HashMap<String, ByteIterator> cur = new HashMap<>();
-        for (String key : keys) {
-          String value = kvStoreClient.get(key);
-          cur.put(key, new StringByteIterator(value));
-        }
-        result.add(cur);
-        return Status.OK;
-      } else {
-        return Status.NOT_IMPLEMENTED;
-      }
-    } catch (KVOperationException e) {
-      LOGGER.error("[scan] error at table={}, startkey={}, recordcount={}, err={}",
-          table, startkey, recordcount, e.getMessage(), e);
-      return Status.ERROR;
-    }
+    return Status.NOT_IMPLEMENTED;
   }
 
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
     try {
-      for (String keyToUpdate : values.keySet()) {
-        kvStoreClient.set(keyToUpdate, values.get(keyToUpdate).toString());
-      }
+      kvStoreClient.set(key, values.toString());
       return Status.OK;
     } catch (KVOperationException e) {
       LOGGER.error("[update] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -99,9 +73,7 @@ public class ConsensusKVClient extends DB {
   @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
     try {
-      for (String keyToUpdate : values.keySet()) {
-        kvStoreClient.set(keyToUpdate, values.get(keyToUpdate).toString());
-      }
+      kvStoreClient.set(key, values.toString());
       return Status.OK;
     } catch (KVOperationException e) {
       LOGGER.error("[insert] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
