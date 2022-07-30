@@ -113,7 +113,7 @@ public class EtcdKVClient extends DB {
     destinationProps = destinationProps.replaceAll("\\s+", "");    // remove whitespace
     String[] dests = destinationProps.split(",");
     for (String dest : dests) {
-      String[] idIp = dest.split("-");
+      String[] idIp = dest.split("=");
       String id = idIp[0];
       String address = idIp[1];
       destinations.add(new EtcdDestination(id, address));
