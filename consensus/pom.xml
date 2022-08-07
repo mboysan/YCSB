@@ -25,7 +25,7 @@
   <dependencies>
     <dependency>
       <groupId>com.mboysan.consensus</groupId>
-      <artifactId>consensus-distribution</artifactId>
+      <artifactId>consensus-cli</artifactId>
       <version>${consensus.version}</version>
     </dependency>
     <dependency>

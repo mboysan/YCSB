@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static junit.framework.Assert.assertNull;
 import static junit.framework.TestCase.assertEquals;
 
 public class EtcdKVClientIntegrationTest {
@@ -34,7 +35,7 @@ public class EtcdKVClientIntegrationTest {
     client = new EtcdKVClient();
 
     Properties properties = new Properties();
-    properties.put("cluster.members", "infra0-http://localhost:9990,infra1-http://localhost:9991,infra2-http://localhost:9992");
+    properties.put("cluster.members", "infra0=http://localhost:9990,infra1=http://localhost:9991,infra2=http://localhost:9992");
 
     Measurements.setProperties(properties);
     final CoreWorkload workload = new CoreWorkload();
@@ -49,11 +50,11 @@ public class EtcdKVClientIntegrationTest {
     final String testKey = "someKey";
 
     // insert
-    Map<String, String> m = new HashMap<>();
+    Map<String, String> expectedValues = new HashMap<>();
     String field1 = "field_1";
     String value1 = "value_1";
-    m.put(field1, value1);
-    Map<String, ByteIterator> result = StringByteIterator.getByteIteratorMap(m);
+    expectedValues.put(field1, value1);
+    Map<String, ByteIterator> result = StringByteIterator.getByteIteratorMap(expectedValues);
     client.insert(TABLE, testKey, result);
 
     // read
@@ -61,14 +62,14 @@ public class EtcdKVClientIntegrationTest {
     Status status = client.read(TABLE, testKey, null, result);
     assertEquals(Status.OK, status);
     assertEquals(1, result.size());
-    assertEquals(value1, result.get(field1).toString());
+    assertEquals(expectedValues.toString(), result.get(testKey).toString());
 
     // update(the same field)
-    m.clear();
+    expectedValues.clear();
     result.clear();
     String newVal = "value_new";
-    m.put(field1, newVal);
-    result = StringByteIterator.getByteIteratorMap(m);
+    expectedValues.put(field1, newVal);
+    result = StringByteIterator.getByteIteratorMap(expectedValues);
     client.update(TABLE, testKey, result);
     assertEquals(1, result.size());
 
@@ -78,7 +79,7 @@ public class EtcdKVClientIntegrationTest {
     assertEquals(Status.OK, status);
     // here we only have one field: field_1
     assertEquals(1, result.size());
-    assertEquals(newVal, result.get(field1).toString());
+    assertEquals(expectedValues.toString(), result.get(testKey).toString());
 
     // delete
     status = client.delete(TABLE, testKey);
@@ -88,7 +89,7 @@ public class EtcdKVClientIntegrationTest {
     result.clear();
     status = client.read(TABLE, testKey, null, result);
     // NoNode return ERROR
-    assertEquals(Status.ERROR, status);
-    assertEquals(0, result.size());
+    assertEquals(Status.OK, status);
+    assertNull(result.get(testKey).toString());
   }
 }
