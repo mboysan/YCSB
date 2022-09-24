@@ -68,3 +68,4 @@ is used by default, otherwise, the default value is comma to support csv output.
 ```
 ./bin/ycsb.sh run consensus -s -p measurementtype=raw -p measurement.raw.output_file=metrics.txt -p measurement.raw.separator=, -p exportfile=metrics.txt -P consensus/conf/application.properties -P workloads/workloada
 ```
+
