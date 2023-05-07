@@ -7,6 +7,9 @@ mvn -pl site.ycsb:consensus-binding -am clean package -DskipTests
 ```
 - Execute a workload:
 ```
+# Register custom JAVA_OPTS such as enabling jmx etc.
+export JAVA_OPTS="-Dcom.sun.management.jmxremote.port=8081 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+
 ./bin/ycsb.sh run consensus -s -P consensus/conf/application.properties -P workloads/workloada
 ```
 
