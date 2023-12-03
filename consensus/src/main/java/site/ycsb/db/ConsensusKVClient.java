@@ -44,6 +44,7 @@ public class ConsensusKVClient extends DB {
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
+      LOGGER.debug("read record [k={}]", key);
       String value = kvStoreClient.get(key);
       result.put(key, new StringByteIterator(value));
       return Status.OK;
@@ -62,7 +63,9 @@ public class ConsensusKVClient extends DB {
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
     try {
-      kvStoreClient.set(key, values.toString());
+      String valuesStr = values.toString();
+      LOGGER.debug("update record [k={}] [v={}]", key, valuesStr);
+      kvStoreClient.set(key, valuesStr);
       return Status.OK;
     } catch (KVOperationException e) {
       LOGGER.error("[update] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -73,7 +76,9 @@ public class ConsensusKVClient extends DB {
   @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
     try {
-      kvStoreClient.set(key, values.toString());
+      String valuesStr = values.toString();
+      LOGGER.debug("insert record [k={}] [v={}]", key, valuesStr);
+      kvStoreClient.set(key, valuesStr);
       return Status.OK;
     } catch (KVOperationException e) {
       LOGGER.error("[insert] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -84,6 +89,7 @@ public class ConsensusKVClient extends DB {
   @Override
   public Status delete(String table, String key) {
     try {
+      LOGGER.debug("delete record [k={}]", key);
       kvStoreClient.delete(key);
       return Status.OK;
     } catch (KVOperationException e) {
