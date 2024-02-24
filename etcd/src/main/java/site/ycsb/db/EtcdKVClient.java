@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
+import site.ycsb.DBException;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
 
@@ -45,12 +46,18 @@ public class EtcdKVClient extends DB {
   }
 
   @Override
+  public void cleanup() throws DBException {
+    kvStoreClient.close();
+    super.cleanup();
+  }
+
+  @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
       String value = null;
       List<KeyValue> kvs = kvStoreClient.get(toBs(key)).get().getKvs();
       if (kvs != null && !kvs.isEmpty()) {
-        value = toStr(kvStoreClient.get(toBs(key)).get().getKvs().get(0).getValue());
+        value = toStr(kvs.get(0).getValue());
       }
       result.put(key, new StringByteIterator(value));
       return Status.OK;
