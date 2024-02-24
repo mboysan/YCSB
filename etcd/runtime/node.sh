@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ./etcd-latest
+
 nodeId=$1
 nodeName="infra$nodeId"
 etcdHost=localhost

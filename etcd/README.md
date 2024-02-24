@@ -1,5 +1,18 @@
 # About
 
+## Running a Test etcd Cluster Locally
+See the following commands to run a test etcd cluster locally:
+```
+cd ./etcd/runtime
+
+# to download the latest etcd release
+./download_etcd.sh
+
+# to start the etcd cluster
+./start_test_cluster.sh
+```
+After executing the commands above, you'll have a 3-node etcd cluster running on your local machine.
+
 ## Compilation and Testing Locally
 - Compile:
 ```
