@@ -18,4 +18,4 @@ curl -O "https://raw.githubusercontent.com/etcd-io/etcd/main/LICENSE"
 touch version.txt
 echo "${ETCD_VER}" > version.txt
 
-etcd --version
+./etcd --version
