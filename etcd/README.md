@@ -61,12 +61,12 @@ export JAVA_OPTS=-Dlog4j.configuration=file:<path-to-log4j-configuration>
 
 To export the measurements as csv, `measurementtype=raw` can be used.
 ```
-./bin/ycsb.sh run etcd -s -p measurementtype=raw -P etcd/conf/application.properties -P workloads/workloada
+./bin/ycsb.sh run etcd -s -p measurementtype=raw -P conf/application.properties -P workloads/workloada
 ```
 
 Alternatively, measurements can be exported as graphite compatible values:
 ```
-./bin/ycsb.sh run etcd -s -p measurementtype=raw -p measurement.raw.graphite=true -P etcd/conf/application.properties -P workloads/workloada
+./bin/ycsb.sh run etcd -s -p measurementtype=raw -p measurement.raw.graphite=true -P conf/application.properties -P workloads/workloada
 ```
 
 Following are all the additional optional properties to include if `measurementtype=raw` has been specified:
@@ -79,5 +79,5 @@ is used by default, otherwise, the default value is comma to support csv output.
 
 **Note:** [consensus-infra](https://github.com/mboysan/consensus-infra) uses the following execution format:
 ```
-./bin/ycsb.sh run etcd -s -p measurementtype=raw -p measurement.raw.output_file=metrics.txt -p measurement.raw.separator=, -p exportfile=metrics.txt -P consensus/conf/application.properties -P workloads/workloada
+./bin/ycsb.sh run etcd -s -p measurementtype=raw -p measurement.raw.output_file=metrics.txt -p measurement.raw.separator=, -p exportfile=metrics.txt -P conf/application.properties -P workloads/workloada
 ```
