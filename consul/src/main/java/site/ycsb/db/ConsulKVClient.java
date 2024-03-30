@@ -44,6 +44,7 @@ public class ConsulKVClient extends DB {
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
+      LOGGER.debug("read record [k={}]", key);
       Response<GetValue> keyValueResponse = kvStoreClient.getKVValue(key);
       GetValue getValue = keyValueResponse.getValue();
       String value = null;
@@ -68,6 +69,7 @@ public class ConsulKVClient extends DB {
   public Status update(String table, String key, Map<String, ByteIterator> values) {
     try {
       String valuesStr = values.toString();
+      LOGGER.debug("update record [k={}] [v={}]", key, valuesStr);
       kvStoreClient.setKVValue(key, valuesStr);
       return Status.OK;
     } catch (Exception e) {
@@ -80,6 +82,7 @@ public class ConsulKVClient extends DB {
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
     try {
       String valuesStr = values.toString();
+      LOGGER.debug("insert record [k={}] [v={}]", key, valuesStr);
       kvStoreClient.setKVValue(key, valuesStr);
       return Status.OK;
     } catch (Exception e) {
@@ -91,6 +94,7 @@ public class ConsulKVClient extends DB {
   @Override
   public Status delete(String table, String key) {
     try {
+      LOGGER.debug("delete record [k={}]", key);
       kvStoreClient.deleteKVValue(key);
       return Status.OK;
     } catch (Exception e) {

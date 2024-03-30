@@ -54,6 +54,7 @@ public class EtcdKVClient extends DB {
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
+      LOGGER.debug("read record [k={}]", key);
       String value = null;
       List<KeyValue> kvs = kvStoreClient.get(toBs(key)).get().getKvs();
       if (kvs != null && !kvs.isEmpty()) {
@@ -76,7 +77,9 @@ public class EtcdKVClient extends DB {
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
     try {
-      kvStoreClient.put(toBs(key), toBs(values.toString())).get();
+      String valuesStr = values.toString();
+      LOGGER.debug("update record [k={}] [v={}]", key, valuesStr);
+      kvStoreClient.put(toBs(key), toBs(valuesStr)).get();
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[update] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -87,7 +90,9 @@ public class EtcdKVClient extends DB {
   @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
     try {
-      kvStoreClient.put(toBs(key), toBs(values.toString())).get();
+      String valuesStr = values.toString();
+      LOGGER.debug("insert record [k={}] [v={}]", key, valuesStr);
+      kvStoreClient.put(toBs(key), toBs(valuesStr)).get();
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[insert] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -98,6 +103,7 @@ public class EtcdKVClient extends DB {
   @Override
   public Status delete(String table, String key) {
     try {
+      LOGGER.debug("delete record [k={}]", key);
       kvStoreClient.delete(toBs(key)).get();
       return Status.OK;
     } catch (Exception e) {
