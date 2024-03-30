@@ -121,6 +121,7 @@ LICENSE file.
     <module>distribution</module>
     <!-- all the datastore bindings, lex sorted please -->
     <module>consensus</module>
+    <module>consul</module>
     <module>etcd</module>
   </modules>
 
