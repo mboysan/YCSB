@@ -1,14 +1,12 @@
 package site.ycsb.db;
 
-import io.etcd.jetcd.ByteSequence;
-import io.etcd.jetcd.Client;
-import io.etcd.jetcd.KV;
-import io.etcd.jetcd.KeyValue;
+import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.Response;
+import com.ecwid.consul.v1.kv.model.GetValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
-import site.ycsb.DBException;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
 
@@ -22,43 +20,36 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
- * <a href="https://etcd.io/">etcd</a> binding for YCSB.
+ * <a href="https://developer.hashicorp.com/consul/">consul</a> binding for YCSB.
  */
-public class EtcdKVClient extends DB {
+public class ConsulKVClient extends DB {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EtcdKVClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConsulKVClient.class);
 
-  private KV kvStoreClient;
+  private ConsulClient kvStoreClient;
 
   @Override
   public void init() {
     Properties properties = getProperties();
     LOGGER.info("properties={}", properties);
     String clusterMembers = properties.getProperty("cluster.members");
-    List<EtcdDestination> destinations = convertPropsToDestinationsList(clusterMembers);
-    String[] endpoints = new String[destinations.size()];
-    for (int i = 0; i < destinations.size(); i++) {
-      endpoints[i] = destinations.get(i).getAddress();
+    List<ConsulDestination> destinations = convertPropsToDestinationsList(clusterMembers);
+    if (destinations.size() > 1) {
+      throw new IllegalArgumentException("Multiple destinations are not supported");
     }
-
-    Client client = Client.builder().endpoints(endpoints).build();
-    this.kvStoreClient = client.getKVClient();
-  }
-
-  @Override
-  public void cleanup() throws DBException {
-    kvStoreClient.close();
-    super.cleanup();
+    ConsulDestination destination = destinations.get(0);
+    this.kvStoreClient = new ConsulClient(destination.getAddress(), destination.getPort());
   }
 
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
       LOGGER.debug("read record [k={}]", key);
+      Response<GetValue> keyValueResponse = kvStoreClient.getKVValue(key);
+      GetValue getValue = keyValueResponse.getValue();
       String value = null;
-      List<KeyValue> kvs = kvStoreClient.get(toBs(key)).get().getKvs();
-      if (kvs != null && !kvs.isEmpty()) {
-        value = toStr(kvs.get(0).getValue());
+      if (getValue != null) {
+        value = getValue.getDecodedValue();
       }
       result.put(key, new StringByteIterator(value));
       return Status.OK;
@@ -79,7 +70,7 @@ public class EtcdKVClient extends DB {
     try {
       String valuesStr = values.toString();
       LOGGER.debug("update record [k={}] [v={}]", key, valuesStr);
-      kvStoreClient.put(toBs(key), toBs(valuesStr)).get();
+      kvStoreClient.setKVValue(key, valuesStr);
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[update] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -92,7 +83,7 @@ public class EtcdKVClient extends DB {
     try {
       String valuesStr = values.toString();
       LOGGER.debug("insert record [k={}] [v={}]", key, valuesStr);
-      kvStoreClient.put(toBs(key), toBs(valuesStr)).get();
+      kvStoreClient.setKVValue(key, valuesStr);
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[insert] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -104,7 +95,7 @@ public class EtcdKVClient extends DB {
   public Status delete(String table, String key) {
     try {
       LOGGER.debug("delete record [k={}]", key);
-      kvStoreClient.delete(toBs(key)).get();
+      kvStoreClient.deleteKVValue(key);
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[delete] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -112,24 +103,19 @@ public class EtcdKVClient extends DB {
     }
   }
 
-  private static ByteSequence toBs(String str) {
-    return ByteSequence.from(str.getBytes());
-  }
-
-  private static String toStr(ByteSequence bs) {
-    return bs.toString();
-  }
-
-  private static List<EtcdDestination> convertPropsToDestinationsList(String destinationProps) {
+  private static List<ConsulDestination> convertPropsToDestinationsList(String destinationProps) {
     Objects.requireNonNull(destinationProps);
-    List<EtcdDestination> destinations = new ArrayList<>();
+    List<ConsulDestination> destinations = new ArrayList<>();
     destinationProps = destinationProps.replaceAll("\\s+", "");    // remove whitespace
     String[] dests = destinationProps.split(",");
     for (String dest : dests) {
       String[] idIp = dest.split("=");
       String id = idIp[0];
-      String address = idIp[1];
-      destinations.add(new EtcdDestination(id, address));
+      String addrPort = idIp[1];
+      String[] addrPortArray = addrPort.split(":");
+      String address = addrPortArray[0];
+      int port = Integer.parseInt(addrPortArray[1]);
+      destinations.add(new ConsulDestination(id, address, port));
     }
     return destinations;
   }

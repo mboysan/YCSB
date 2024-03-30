@@ -10,25 +10,15 @@
     <relativePath>../binding-parent</relativePath>
   </parent>
 
-  <artifactId>etcd-binding</artifactId>
-  <name>etcd Bindings</name>
+  <artifactId>consul-binding</artifactId>
+  <name>consul Bindings</name>
   <packaging>jar</packaging>
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.16.1</version>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-core</artifactId>
-      <version>1.61.1</version>
-    </dependency>
-    <dependency>
-      <groupId>io.etcd</groupId>
-      <artifactId>jetcd-core</artifactId>
-      <version>0.7.7</version>
+      <groupId>com.ecwid.consul</groupId>
+      <artifactId>consul-api</artifactId>
+      <version>1.4.5</version>
     </dependency>
     <dependency>
       <groupId>site.ycsb</groupId>
@@ -53,28 +43,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-<!--  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven.assembly.version}</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <appendAssemblyId>false</appendAssemblyId>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>-->
 </project>
