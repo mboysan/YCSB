@@ -1,13 +1,10 @@
 package site.ycsb.db;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import site.ycsb.ByteIterator;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
+import site.ycsb.WorkloadException;
 import site.ycsb.measurements.Measurements;
 import site.ycsb.workloads.CoreWorkload;
 
@@ -16,22 +13,28 @@ import java.util.Map;
 import java.util.Properties;
 
 import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.fail;
 import static junit.framework.TestCase.assertEquals;
 
 public class ConsulKVClientIntegrationTest {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConsulKVClient.class);
 
   private static final String TABLE = "sometable";
 
   private ConsulKVClient client;
 
-  @BeforeClass
-  public static void beforeClass() throws Exception {
-    LOGGER.info("simplelogger test");
+  @Test
+  public void testInitClientWithInvalidProperties() {
+    Properties properties = new Properties();
+    properties.put("raft.consistency", "undefined");
+    client = new ConsulKVClient();
+    client.setProperties(properties);
+    try {
+      client.init();
+      fail();
+    } catch (IllegalArgumentException ignore) {}
   }
 
-  @Before
-  public void setUp() throws Exception {
+  private void setUpClient() throws WorkloadException {
     client = new ConsulKVClient();
 
     Properties properties = new Properties();
@@ -46,7 +49,9 @@ public class ConsulKVClientIntegrationTest {
   }
 
   @Test
-  public void testConsulClient() {
+  public void testConsulClient() throws WorkloadException {
+    setUpClient();
+
     final String testKey = "someKey";
 
     // insert

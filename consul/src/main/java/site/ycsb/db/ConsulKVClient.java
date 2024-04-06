@@ -1,6 +1,8 @@
 package site.ycsb.db;
 
+import com.ecwid.consul.v1.ConsistencyMode;
 import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.GetValue;
 import org.slf4j.Logger;
@@ -26,12 +28,31 @@ public class ConsulKVClient extends DB {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConsulKVClient.class);
 
+  private QueryParams queryParams = new QueryParams(ConsistencyMode.CONSISTENT);
   private ConsulClient kvStoreClient;
 
   @Override
   public void init() {
     Properties properties = getProperties();
     LOGGER.info("properties={}", properties);
+
+    String consistencyMode = properties.getProperty("raft.consistency");
+    if (consistencyMode != null) {
+      switch (consistencyMode) {
+        case "default":
+          queryParams = new QueryParams(ConsistencyMode.DEFAULT);
+          break;
+        case "weak":
+          queryParams = new QueryParams(ConsistencyMode.STALE);
+          break;
+        case "strong":
+          queryParams = new QueryParams(ConsistencyMode.CONSISTENT);
+          break;
+        default:
+          throw new IllegalArgumentException("Invalid consistency mode: " + consistencyMode);
+      }
+    }
+
     String clusterMembers = properties.getProperty("cluster.members");
     List<ConsulDestination> destinations = convertPropsToDestinationsList(clusterMembers);
     if (destinations.size() > 1) {
@@ -45,7 +66,7 @@ public class ConsulKVClient extends DB {
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
       LOGGER.debug("read record [k={}]", key);
-      Response<GetValue> keyValueResponse = kvStoreClient.getKVValue(key);
+      Response<GetValue> keyValueResponse = kvStoreClient.getKVValue(key, queryParams);
       GetValue getValue = keyValueResponse.getValue();
       String value = null;
       if (getValue != null) {
@@ -70,7 +91,7 @@ public class ConsulKVClient extends DB {
     try {
       String valuesStr = values.toString();
       LOGGER.debug("update record [k={}] [v={}]", key, valuesStr);
-      kvStoreClient.setKVValue(key, valuesStr);
+      kvStoreClient.setKVValue(key, valuesStr, queryParams);
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[update] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -83,7 +104,7 @@ public class ConsulKVClient extends DB {
     try {
       String valuesStr = values.toString();
       LOGGER.debug("insert record [k={}] [v={}]", key, valuesStr);
-      kvStoreClient.setKVValue(key, valuesStr);
+      kvStoreClient.setKVValue(key, valuesStr, queryParams);
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[insert] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
@@ -95,7 +116,7 @@ public class ConsulKVClient extends DB {
   public Status delete(String table, String key) {
     try {
       LOGGER.debug("delete record [k={}]", key);
-      kvStoreClient.deleteKVValue(key);
+      kvStoreClient.deleteKVValue(key, queryParams);
       return Status.OK;
     } catch (Exception e) {
       LOGGER.error("[delete] error at table={}, key={}, err={}", table, key, e.getMessage(), e);
