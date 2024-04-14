@@ -1,5 +1,23 @@
 # About
 
+## Running a Test consensus Cluster Locally
+See the following commands to run a test etcd cluster locally:
+```
+cd ./consensus/runtime
+
+# to download the latest consensus release
+./download_consensus.sh
+
+# to start the consensus cluster,
+# raft protocol:
+./start_test_cluster.sh raft
+
+# bizur protocol:
+./start_test_cluster.sh bizur
+```
+After executing the commands above, you'll have a 3-node consensus cluster running on your local machine.
+
+
 ## Compilation and Testing Locally
 - Compile:
 ```
