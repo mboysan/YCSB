@@ -111,7 +111,7 @@ LICENSE file.
     <maven.dependency.version>2.10</maven.dependency.version>
 
     <!-- datastore binding versions, lex sorted -->
-    <consensus.version>1.10</consensus.version>
+    <consensus.version>1.11</consensus.version>
   </properties>
 
   <modules>
