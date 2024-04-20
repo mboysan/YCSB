@@ -1,6 +1,7 @@
 # custom
 etcd-latest
 consul-latest
+consensus-latest
 
 # ignore compiled byte code
 target
