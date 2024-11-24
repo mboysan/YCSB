@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONSENSUS_VERSION=1.11
+CONSENSUS_VERSION=1.12
 DOWNLOAD_URL="https://raw.githubusercontent.com/mboysan/mvn-repo/releases/consensus/consensus-distribution-${CONSENSUS_VERSION}-jar-with-dependencies.jar"
 INSTALL_DIR="./consensus-latest"
 

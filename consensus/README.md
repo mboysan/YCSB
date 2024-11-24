@@ -2,21 +2,32 @@
 
 ## Running a Test consensus Cluster Locally
 See the following commands to run a test etcd cluster locally:
+- Download the executables
 ```
 cd ./consensus/runtime
 
 # to download the latest consensus release
 ./download_consensus.sh
+```
 
-# to start the consensus cluster,
-# raft protocol:
+- Start a 3-node consensus cluster:
+```
+./start_test_cluster.sh <protocol>
+
+# protocol can be "raft" or "bizur", e.g.
 ./start_test_cluster.sh raft
 
-# bizur protocol:
-./start_test_cluster.sh bizur
+# exit by pressing any key on your keyboard
 ```
-After executing the commands above, you'll have a 3-node consensus cluster running on your local machine.
 
+- Run a sample load test (make sure you follow "Compilation and Testing Locally" section below first):
+```
+# specify the protocol and testGroupAndTestName when starting the cluster:
+./start_test_cluster.sh "raft" "W0.T1"
+
+# run the sample test by specfying the testGroupAndTestName and workload file:
+./run_sample_test.sh "W0.T1" "workloads/workload_rw_10k"
+```
 
 ## Compilation and Testing Locally
 - Compile:
@@ -87,6 +98,6 @@ is used by default, otherwise, the default value is comma to support csv output.
 
 **Note:** [consensus-infra](https://github.com/mboysan/consensus-infra) uses the following execution format:
 ```
-./bin/ycsb.sh run consensus -s -p measurementtype=raw -p measurement.raw.output_file=metrics.txt -p measurement.raw.separator=, -p exportfile=metrics.txt -P consensus/conf/application.properties -P workloads/workloada
+./bin/ycsb.sh run consensus -s -p measurementtype=raw -p measurement.raw.output_file=metrics.txt -p measurement.raw.separator=, -p exportfile=metrics.txt -p threadcount=1 -P consensus/conf/application.properties -P workloads/workloada
 ```
 
