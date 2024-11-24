@@ -82,6 +82,9 @@ public class OneMeasurementRaw extends OneMeasurement {
   public static final String OUTPUT_FILE_PATH = "measurement.raw.output_file";
   public static final String OUTPUT_FILE_PATH_DEFAULT = "";
 
+  public static final String PRINT_HEADERS = "measurement.raw.print_headers";
+  public static final String PRINT_HEADERS_DEFAULT = "false";
+
   /**
    * Optionally, user can request to not output summary stats. This is useful
    * if the user chains the raw measurement type behind the HdrHistogram type
@@ -113,6 +116,7 @@ public class OneMeasurementRaw extends OneMeasurement {
   private final String prefix;
   private final boolean exportToGraphite;
   private final String separator;
+  private final boolean printHeaders;
 
   private LinkedList<RawDataPoint> measurements;
   private long totalLatency = 0;
@@ -150,6 +154,7 @@ public class OneMeasurementRaw extends OneMeasurement {
     prefix = props.getProperty(MEASUREMENT_PREFIX_PROP, "");
     exportToGraphite = Boolean.parseBoolean(props.getProperty(MEASUREMENT_EXPORT_GRAPHITE_PROP, "false"));
     separator = props.getProperty(MEASUREMENT_SEPARATOR_PROP, exportToGraphite ? " " : ",");
+    printHeaders = Boolean.parseBoolean(props.getProperty(PRINT_HEADERS, PRINT_HEADERS_DEFAULT));
 
     measurements = new LinkedList<>();
   }
@@ -169,8 +174,9 @@ public class OneMeasurementRaw extends OneMeasurement {
     // Output raw data points first then print out a summary of percentiles to
     // stdout.
 
-    outputStream.println(getName() +
-        " latency raw data: op, timestamp(ms), latency(us)");
+    if (printHeaders) {
+      outputStream.println(getName() + " latency raw data: op, timestamp(ms), latency(us)");
+    }
     for (RawDataPoint point : measurements) {
       String name = prefix + getName();
       if (exportToGraphite) {
